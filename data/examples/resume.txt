@@ -1,0 +1,22 @@
+김지원 | Python 백엔드 개발자
+jiwon@example.com
+
+경력
+2024.03 ~ 2026.08 | 가상커머스 | 백엔드 개발자
+- Python과 FastAPI로 주문 조회 REST API를 개발했습니다.
+- PostgreSQL 쿼리와 Redis 캐시를 개선해 평균 응답 시간을 420ms에서 180ms로 단축했습니다.
+- 월 20만 건의 주문을 처리하는 서비스에서 pytest 기반 테스트 45개를 작성했습니다.
+- GitHub 코드 리뷰를 통해 프론트엔드 개발자 3명과 협업했습니다.
+
+프로젝트
+2023.09 ~ 2024.02 | 도서 대여 관리 서비스
+- Python, Flask, PostgreSQL로 도서 검색과 반납 API를 구현했습니다.
+- Docker로 개발 환경을 구성하고 GitHub Actions로 테스트를 자동화했습니다.
+
+학력
+2020.03 ~ 2024.02 | 예시대학교 컴퓨터공학 학사
+
+기술
+Python, FastAPI, Flask, PostgreSQL, Redis, Docker, Git, pytest
+
+이 문서는 프로그램 체험을 위한 가상의 이력서입니다.

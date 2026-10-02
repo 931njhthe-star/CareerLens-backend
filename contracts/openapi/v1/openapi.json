@@ -1,0 +1,1691 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CareerLens API",
+    "version": "1.1.0",
+    "description": "Local educational application API for email/OAuth authentication and the resume-to-practice-application workflow. Unsafe requests require the csrf_token from GET /auth/session in X-CSRF-Token and its same-origin session cookie. Resume data is not sent to external AI or employers. Provider and password reset mail configuration: docs/api/auth.md."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5101/api/v1"
+    },
+    {
+      "url": "/api/v1",
+      "description": "Same-origin frontend proxy"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Public API health",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    }
+                  },
+                  "required": [
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workspace": {
+      "get": {
+        "summary": "Current authenticated user workspace",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete this user workspace and keep login",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resume": {
+      "put": {
+        "summary": "Save reviewed resume; changed input clears report and answers",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumeInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resume/upload": {
+      "post": {
+        "summary": "Extract TXT/PDF/DOCX in memory and save editable text",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Upload exceeds request size limit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "At most 10 MiB; PDF at most 50 pages; extracted text at most 50,000 characters."
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/job": {
+      "put": {
+        "summary": "Save company, role and posting; changes clear report and answers",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JobInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/questions": {
+      "get": {
+        "summary": "Up to three optional evidence questions",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "questions": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Question"
+                      }
+                    }
+                  },
+                  "required": [
+                    "questions"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analysis": {
+      "post": {
+        "summary": "Generate and persist local practice application report",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "report": {
+                      "$ref": "#/components/schemas/Report"
+                    }
+                  },
+                  "required": [
+                    "report"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/example": {
+      "post": {
+        "summary": "Replace this user workspace with synthetic examples",
+        "tags": [
+          "Workspace"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workspace"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input or missing prerequisites",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Login required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF or Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/session": {
+      "get": {
+        "summary": "Read the current session and initialize a CSRF token",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [],
+        "description": "Public endpoint. Returns user=null for guests. Creates a signed anonymous session cookie if necessary. Provider enabled flags reflect this project configuration.",
+        "responses": {
+          "200": {
+            "description": "Current authenticated or anonymous session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Create an email account and sign in",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "description": "An anonymous or authenticated session cookie and its CSRF token are required; call GET /auth/session first. When present, Origin must match PUBLIC_ORIGIN.",
+        "responses": {
+          "201": {
+            "description": "Account created; user is present and session/CSRF tokens are rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF token or disallowed Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, email, name or password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempt limit exceeded (30 requests per action and peer IP in 10 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Sign in with an email and password",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "description": "An anonymous or authenticated session cookie and its CSRF token are required; call GET /auth/session first. When present, Origin must match PUBLIC_ORIGIN.",
+        "responses": {
+          "200": {
+            "description": "Signed in; user is present and session/CSRF tokens are rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF token or disallowed Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Incorrect email or password, including OAuth-only accounts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempt limit exceeded (30 requests per action and peer IP in 10 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Revoke the current session and return an anonymous session",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "description": "An anonymous or authenticated session cookie and its CSRF token are required; call GET /auth/session first. When present, Origin must match PUBLIC_ORIGIN.",
+        "responses": {
+          "200": {
+            "description": "Current server session revoked; user is null and csrf_token rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF token or disallowed Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgot-password": {
+      "post": {
+        "summary": "Request a password reset for a local email/password account",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "description": "An anonymous or authenticated session cookie and its CSRF token are required; call GET /auth/session first. When present, Origin must match PUBLIC_ORIGIN.",
+        "responses": {
+          "200": {
+            "description": "The same generic message is returned regardless of account existence, OAuth-only account status or delivery failure. Reset tokens are never returned in this API response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF token or disallowed Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or email",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempt limit exceeded (30 requests per action and peer IP in 10 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "summary": "Consume a reset token and replace the password",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": [],
+            "csrfToken": []
+          }
+        ],
+        "description": "An anonymous or authenticated session cookie and its CSRF token are required; call GET /auth/session first. When present, Origin must match PUBLIC_ORIGIN.",
+        "responses": {
+          "200": {
+            "description": "Password changed, all user sessions revoked, and a fresh anonymous session returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Missing/invalid CSRF token or disallowed Origin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON/password or invalid, expired, already-used reset token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempt limit exceeded (30 requests per action and peer IP in 10 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/oauth/{provider}": {
+      "get": {
+        "summary": "Begin a configured OAuth/OIDC login",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [],
+        "description": "Navigate the browser to this endpoint. The signed session cookie stores OAuth state; retain it for the callback. Requires this project provider client ID/secret. No X-CSRF-Token header is used for this GET; provider state/nonce is validated on return.",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "github",
+                "linkedin"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to provider authorization; may set the session cookie",
+            "headers": {
+              "Location": {
+                "description": "Browser redirect destination.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown provider",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Provider is unconfigured or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Authentication attempt limit exceeded (30 requests per action and peer IP in 10 minutes)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/oauth/{provider}/callback": {
+      "get": {
+        "summary": "Validate the provider callback and establish the local session",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "sessionCookie": []
+          }
+        ],
+        "description": "Provider-facing browser callback. Requires the cookie that initiated OAuth. Authlib validates OAuth state and, for OIDC, the signed ID token and nonce. Failure or cancellation also redirects to the frontend with an auth_error query parameter; no provider token is returned to the browser.",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "google",
+                "github",
+                "linkedin"
+              ]
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Authorization code on successful provider authorization."
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Must match the value saved in the initiating session to complete login."
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Provider denial/error code instead of authorization code."
+          },
+          {
+            "name": "error_description",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to PUBLIC_ORIGIN/ after success; on failure redirect to PUBLIC_ORIGIN/?auth_error=... . Successful login rotates session and CSRF tokens.",
+            "headers": {
+              "Location": {
+                "description": "Browser redirect destination.",
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "careerlens_session",
+        "description": "Signed session cookie. Auth entrypoints accept an anonymous session; workflow endpoints require a valid authenticated server session."
+      },
+      "csrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token",
+        "description": "Token returned by GET /auth/session, bound to the same cookie. Replace after login, registration, logout and password reset."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "Question": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "prompt",
+          "reason"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "excerpt": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "resume",
+              "answer"
+            ]
+          },
+          "source_label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "excerpt",
+          "source",
+          "source_label"
+        ]
+      },
+      "Match": {
+        "type": "object",
+        "properties": {
+          "requirement": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "confirmed",
+              "partial",
+              "missing"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "resume",
+              "answer",
+              "mixed",
+              "none"
+            ]
+          },
+          "source_label": {
+            "type": "string"
+          },
+          "evidence_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "matched_terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "missing_terms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "contextual": {
+            "type": "boolean"
+          },
+          "quantified": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "requirement",
+          "evidence",
+          "status",
+          "source",
+          "source_label",
+          "evidence_items",
+          "matched_terms",
+          "missing_terms",
+          "contextual",
+          "quantified"
+        ]
+      },
+      "Report": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "verdict": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "criteria": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "integer"
+                },
+                "max_score": {
+                  "type": "integer"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "label",
+                "score",
+                "max_score",
+                "detail"
+              ]
+            }
+          },
+          "matches": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Match"
+            }
+          },
+          "strengths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "priorities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "detail": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "detail"
+              ]
+            }
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "recruiter_email": {
+            "type": "object",
+            "properties": {
+              "subject": {
+                "type": "string"
+              },
+              "body": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject",
+              "body"
+            ]
+          },
+          "methodology": {
+            "type": "string"
+          },
+          "analysis_mode": {
+            "type": "string",
+            "enum": [
+              "local_rules"
+            ]
+          },
+          "company": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "requirement_count": {
+            "type": "integer"
+          },
+          "confirmed_count": {
+            "type": "integer"
+          },
+          "partial_count": {
+            "type": "integer"
+          },
+          "missing_count": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "score",
+          "verdict",
+          "summary",
+          "criteria",
+          "matches",
+          "strengths",
+          "gaps",
+          "priorities",
+          "questions",
+          "recruiter_email",
+          "methodology",
+          "analysis_mode",
+          "company",
+          "role",
+          "requirement_count",
+          "confirmed_count",
+          "partial_count",
+          "missing_count"
+        ]
+      },
+      "Draft": {
+        "type": "object",
+        "properties": {
+          "resume_text": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "company": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "job_text": {
+            "type": "string"
+          },
+          "answers": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "report": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Report"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "resume_text",
+          "filename",
+          "company",
+          "role",
+          "job_text",
+          "answers",
+          "report",
+          "created_at"
+        ]
+      },
+      "Workspace": {
+        "type": "object",
+        "properties": {
+          "draft": {
+            "$ref": "#/components/schemas/Draft"
+          },
+          "questions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            }
+          }
+        },
+        "required": [
+          "draft",
+          "questions"
+        ]
+      },
+      "ResumeInput": {
+        "type": "object",
+        "properties": {
+          "resume_text": {
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 50000
+          }
+        },
+        "required": [
+          "resume_text"
+        ]
+      },
+      "JobInput": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "job_text": {
+            "type": "string",
+            "minLength": 40,
+            "maxLength": 50000
+          }
+        },
+        "required": [
+          "company",
+          "role",
+          "job_text"
+        ]
+      },
+      "AnalysisInput": {
+        "type": "object",
+        "properties": {
+          "answers": {
+            "type": "object",
+            "description": "Only IDs returned by the current questions endpoint are accepted; omitted answers are empty.",
+            "additionalProperties": {
+              "type": "string",
+              "maxLength": 8000
+            }
+          }
+        },
+        "required": []
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and lowercased before lookup."
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name"
+        ]
+      },
+      "OAuthProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "google",
+              "github",
+              "linkedin"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "enum": [
+              "Google",
+              "GitHub",
+              "LinkedIn"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "enabled"
+        ]
+      },
+      "AuthSession": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "csrf_token": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Send in X-CSRF-Token on unsafe API requests. Replaced after registration, login, logout and password reset."
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OAuthProvider"
+            }
+          },
+          "mail_mode": {
+            "type": "string",
+            "enum": [
+              "local",
+              "smtp"
+            ],
+            "description": "local writes password reset mail to the private server outbox; smtp uses configured SMTP."
+          }
+        },
+        "required": [
+          "user",
+          "csrf_token",
+          "providers",
+          "mail_mode"
+        ]
+      },
+      "RegisterInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "description": "Trimmed before validation."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and lowercased before lookup."
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
+        ]
+      },
+      "LoginInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and lowercased before lookup."
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "ForgotPasswordInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and lowercased before lookup."
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordInput": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 256,
+            "writeOnly": true,
+            "description": "Single-use reset token from the reset email; expires after 15 minutes."
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "maxLength": 128,
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "PasswordResetResult": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/AuthSession"
+          },
+          {
+            "$ref": "#/components/schemas/Message"
+          }
+        ],
+        "description": "Anonymous session (user is null), rotated csrf_token, and completion message. Other sessions for this user are revoked."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Authentication"
+    },
+    {
+      "name": "Workspace"
+    }
+  ]
+}
