@@ -1,7 +1,6 @@
 """Domain input validation."""
+
 from __future__ import annotations
-
-
 
 
 def _validate(resume_text: str, job_text: str, role: str) -> None:

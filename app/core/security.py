@@ -1,4 +1,5 @@
 """Shared password, token and authentication helpers."""
+
 from functools import wraps
 from hashlib import sha256
 from secrets import token_urlsafe
@@ -27,6 +28,12 @@ def require_login(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
         if not getattr(g, "user", None):
-            return jsonify(error={"code": "authentication_required", "message": "로그인이 필요합니다."}), 401
+            return (
+                jsonify(
+                    error={"code": "authentication_required", "message": "로그인이 필요합니다."}
+                ),
+                401,
+            )
         return view(*args, **kwargs)
+
     return wrapped

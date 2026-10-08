@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "notice": "교육용 가상 자료입니다. 인물·회사·프로젝트·경력·성과 수치는 모두 허구이며 실제 지원에 사용할 수 없습니다.",
+  "added_job_count": 30,
+  "added_db_resume_count": 200,
+  "separate_desktop_resume_count": 10,
+  "unique_job_content_count": 30,
+  "unique_resume_content_count": 200,
+  "role_family_count": 20,
+  "format_sources": {
+    "saramin": "https://www2.saramin.co.kr/zf_user/help/help-word/main?inquiryCode=1639&memberCode=1638",
+    "albamon": "https://m.albamon.com/service-center/guide",
+    "daangn": "https://jobs.daangn.com/s?jobTask=KITCHEN_COOK&regionId=965"
+  },
+  "files": {
+    "orchestration_job_postings.json": "177aef8ec2eb1ec20646e71917f45f57de900d6a062f59cbffab3016746095be",
+    "synthetic_resumes.json": "7d701d988f5d27c8cb661d449a13811a10a261115543229f87b9c43c30e739f7",
+    "desktop_ai_resumes.json": "143d1682a4ba99803cea1987fae1ce469dd0d6440b6fbabfa4610c434d8a0034"
+  }
+}

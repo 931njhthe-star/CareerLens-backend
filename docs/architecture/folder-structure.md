@@ -6,7 +6,7 @@
 ## 상세 흐름도 대응
 
 각 단계마다 폴더를 만들지 않고 같은 책임을 수행하는 단계를 모았습니다.
-아래는 원래 설계한 위치 대응입니다. 현재 Python API·로컬 규칙 분석·인증·설정 가능한 SQLite/PostgreSQL 저장이 구현되어 있으며, LLM·검색·일정 관련 위치는 확장 예약 영역입니다.
+아래는 원래 설계한 위치 대응입니다. 현재 Python API·규칙 분석·인증·설정 가능한 SQLite/PostgreSQL 저장에 공고 탐색·북마크·본인 공고 관리, LangGraph 실행, 키워드 검색, 선택적 LLM 코칭을 추가했습니다. 벡터 검색·영속 에이전트 기억·일정 관련 위치는 확장 예약 영역입니다. 자세한 구현과 한계는 [에이전트 확장 설계](agent-evolution.md)를 확인합니다.
 
 | 흐름도 단계 | 주요 위치 |
 | --- | --- |
@@ -63,11 +63,11 @@ API 호환성이 달라지면 `app/api/v2`와 해당 버전의 계약을 추가�
 
 ZIP은 P0의 요건별 근거 상태를 중심으로 설계하고, 텍스트 흐름도는 STRONG/PARTIAL/TRANSFERABLE/NONE과 종합점수를 제안합니다.
 `app/modules/analysis/scoring`은 이 확장을 수용하는 예약 공간이며 점수 공개 정책·상태 대응은 확정하지 않았습니다.
-현재 HTTP는 Flask, 저장소는 DATABASE_URL로 선택하는 SQLite/PostgreSQL, 서버는 Waitress입니다. LLM·임베딩 제공자는 연결하지 않았습니다.
+현재 HTTP는 Flask, 저장소는 DATABASE_URL로 선택하는 SQLite/PostgreSQL, 서버는 Waitress입니다. LLM은 각자의 설정으로 선택적으로 연결하는 LangChain 어댑터가 있고 기본값은 규칙 모드입니다. 임베딩 제공자·벡터 DB는 연결하지 않았습니다.
 
 ## 확정한 실행·개발 규칙
 
-API는 `app/application`을 호출합니다. 현재 application은 로컬 규칙 모듈을 실행하고 DB·외부 구현을 조립합니다. 그래프와 worker는 확장 영역입니다.
+API는 `app/application`을 호출합니다. application은 DB·외부 구현을 조립하고 분석 시 실제 LangGraph를 호출합니다. 그래프 안에서 기존 규칙 모듈을 실행하고 선택적 코칭을 검증합니다. worker는 확장 영역입니다.
 agent와 modules는 application을 역참조하지 않습니다. 상세 방향과 구현 우선순위는 [의존 규칙](dependencies.md)을 따릅니다.
 명세 전달은 [API 계약 절차](../api/contract-workflow.md), 사례 연결은 [평가 데이터 기준](../../evaluations/datasets/README.md)을 따릅니다.
-두 폴더는 각각 main 브랜치의 독립 로컬 Git 저장소로 초기화되어 있습니다.
+두 폴더는 독립 Git 저장소이며 팀 공유용 브랜치는 `sub-main/withandwithout`입니다. 기존 main/develop과 다른 기여자의 작업은 보존합니다.

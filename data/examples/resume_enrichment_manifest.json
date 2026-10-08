@@ -1,0 +1,16 @@
+{
+  "fixture_pack": "career-resumes-v2",
+  "fixture_version": 2,
+  "db_resume_count": 220,
+  "desktop_resume_count": 40,
+  "desktop_ai_related_count": 30,
+  "desktop_other_role_count": 10,
+  "minimum_characters": 2686,
+  "maximum_characters": 3235,
+  "unique_full_text_count": 260,
+  "files": {
+    "resumes.json": "ea5faa1324d9cf37b43cec9d3f1dbcbc11d9259ec7b9cd7d97da64516efafeb0",
+    "synthetic_resumes.json": "cd226fad6b9c81bd8c81871f3edec914dcc02081e0e54bb27607dbc85779f4c3",
+    "desktop_ai_resumes.json": "f1815da95846901420373069401afdaef8be825a96e803d570c3eedcfd070cf5"
+  }
+}

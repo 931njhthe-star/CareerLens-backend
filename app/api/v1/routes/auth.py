@@ -1,4 +1,5 @@
 """Version 1 authentication endpoints."""
+
 import smtplib
 from urllib.parse import urlencode
 
@@ -57,7 +58,9 @@ def forgot_password():
         current_app.extensions["auth_service"].forgot_password(payload())
     except (OSError, smtplib.SMTPException):
         # The response must not disclose account existence or delivery details.
-        current_app.logger.warning("Password reset delivery failed; check local mail/SMTP configuration")
+        current_app.logger.warning(
+            "Password reset delivery failed; check local mail/SMTP configuration"
+        )
     return jsonify(message="등록된 이메일이라면 비밀번호 재설정 안내를 보냈습니다.")
 
 
@@ -67,7 +70,10 @@ def reset_password():
     current_app.extensions["auth_service"].reset_password(payload())
     session.clear()
     g.user = None
-    return jsonify(message="비밀번호를 변경했습니다. 새 비밀번호로 로그인해 주세요.", **session_payload(current_app))
+    return jsonify(
+        message="비밀번호를 변경했습니다. 새 비밀번호로 로그인해 주세요.",
+        **session_payload(current_app),
+    )
 
 
 @auth_api.get("/oauth/<provider>")
@@ -78,7 +84,11 @@ def oauth_start(provider):
     try:
         return client.authorize_redirect(callback)
     except (AuthlibBaseError, JoseError, RequestException, ValueError):
-        raise AuthError("소셜 로그인 제공자에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.", "provider_connection_failed", 503)
+        raise AuthError(
+            "소셜 로그인 제공자에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+            "provider_connection_failed",
+            503,
+        )
 
 
 @auth_api.get("/oauth/<provider>/callback")
@@ -91,5 +101,9 @@ def oauth_callback(provider):
     except AuthError as error:
         return redirect(target + "?" + urlencode({"auth_error": error.message}))
     except (AuthlibBaseError, JoseError, RequestException, ValueError, KeyError):
-        return redirect(target + "?" + urlencode({"auth_error": "소셜 로그인을 완료하지 못했습니다. 다시 시도해 주세요."}))
+        return redirect(
+            target
+            + "?"
+            + urlencode({"auth_error": "소셜 로그인을 완료하지 못했습니다. 다시 시도해 주세요."})
+        )
     return redirect(target)

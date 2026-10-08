@@ -10,7 +10,9 @@ from app.modules.analysis.reporting import service as engine
 class AnalysisTests(unittest.TestCase):
     job = "Python과 SQL 기반 데이터 분석 경험\n고객 인터뷰를 통한 사용자 조사\n유관 부서와 협업하여 온보딩 개선"
     strong = "파이썬과 SQL로 제품 데이터를 분석해 전환율을 18% 개선했습니다.\n고객 인터뷰 20건을 수행해 사용자 조사 결과를 정리했습니다.\n디자이너와 협업하여 온보딩을 개선하고 이탈률을 10% 감소시켰습니다."
-    weak = "카페에서 음료 조리와 재고 관리를 담당했습니다. 주말 매장 운영과 고객 응대를 수행했습니다."
+    weak = (
+        "카페에서 음료 조리와 재고 관리를 담당했습니다. 주말 매장 운영과 고객 응대를 수행했습니다."
+    )
 
     def analyze(self, resume, **kwargs):
         return engine.analyze(resume, "예시회사", "제품 매니저", self.job, **kwargs)
@@ -27,7 +29,11 @@ class AnalysisTests(unittest.TestCase):
         json.dumps(strong, ensure_ascii=False)
 
     def test_missing_inputs_raise(self):
-        for resume, job, role in (("", self.job, "직무"), ("이력서", " ", "직무"), ("이력서", self.job, "")):
+        for resume, job, role in (
+            ("", self.job, "직무"),
+            ("이력서", " ", "직무"),
+            ("이력서", self.job, ""),
+        ):
             with self.subTest(resume=resume, job=job, role=role):
                 with self.assertRaises(ValueError):
                     engine.analyze(resume, "회사", role, job)
@@ -43,7 +49,18 @@ class AnalysisTests(unittest.TestCase):
         self.assertLess(a["score"], 60)
 
     def test_negative_experience_does_not_match(self):
-        negatives = ["Python 경험 없음", "Python 개발 경험이 없습니다.", "파이썬을 사용하지 않았습니다.", "Python을 배운 적 없음", "No experience with Python.", "I have never used Python.", "Python: none", "I have not worked with Python.", "No Python experience", "I am not experienced in Python."]
+        negatives = [
+            "Python 경험 없음",
+            "Python 개발 경험이 없습니다.",
+            "파이썬을 사용하지 않았습니다.",
+            "Python을 배운 적 없음",
+            "No experience with Python.",
+            "I have never used Python.",
+            "Python: none",
+            "I have not worked with Python.",
+            "No Python experience",
+            "I am not experienced in Python.",
+        ]
         for text in negatives:
             with self.subTest(text=text):
                 result = engine.analyze(text, "회사", "개발자", "Python 개발 경험")
@@ -51,7 +68,12 @@ class AnalysisTests(unittest.TestCase):
                 self.assertEqual(result["score"], 0)
 
     def test_other_positive_skill_is_retained(self):
-        result = engine.analyze("Python 경험 없음. SQL로 보고서를 작성했습니다.", "회사", "분석가", "Python 개발\nSQL 활용")
+        result = engine.analyze(
+            "Python 경험 없음. SQL로 보고서를 작성했습니다.",
+            "회사",
+            "분석가",
+            "Python 개발\nSQL 활용",
+        )
         self.assertEqual([match["status"] for match in result["matches"]], ["missing", "confirmed"])
 
     def test_answers_are_separate_evidence(self):
@@ -60,12 +82,28 @@ class AnalysisTests(unittest.TestCase):
         after = self.analyze(self.weak, answers={"evidence_1": answer})
         self.assertGreater(after["score"], before["score"])
         self.assertTrue(any(match["source"] == "answer" for match in after["matches"]))
-        self.assertTrue(any(item["excerpt"] == answer and item["source"] == "answer" for match in after["matches"] for item in match["evidence_items"]))
-        self.assertEqual(self.analyze(self.weak, answers={"evidence_1": "Python 경험 없음"})["score"], before["score"])
+        self.assertTrue(
+            any(
+                item["excerpt"] == answer and item["source"] == "answer"
+                for match in after["matches"]
+                for item in match["evidence_items"]
+            )
+        )
+        self.assertEqual(
+            self.analyze(self.weak, answers={"evidence_1": "Python 경험 없음"})["score"],
+            before["score"],
+        )
 
     def test_generic_non_tech_requirements(self):
-        good = engine.analyze("커피 추출을 담당하고 에스프레소 레시피를 개선했습니다.\n재고 관리를 담당해 폐기량을 12% 감소시켰습니다.", "카페", "바리스타", "커피 추출\n재고 관리")
-        bad = engine.analyze("Python으로 API를 개발했습니다.", "카페", "바리스타", "커피 추출\n재고 관리")
+        good = engine.analyze(
+            "커피 추출을 담당하고 에스프레소 레시피를 개선했습니다.\n재고 관리를 담당해 폐기량을 12% 감소시켰습니다.",
+            "카페",
+            "바리스타",
+            "커피 추출\n재고 관리",
+        )
+        bad = engine.analyze(
+            "Python으로 API를 개발했습니다.", "카페", "바리스타", "커피 추출\n재고 관리"
+        )
         self.assertGreater(good["score"], bad["score"] + 50)
 
     def test_plain_excerpt_is_preserved_for_template_escaping(self):
@@ -104,7 +142,10 @@ class AnalysisTests(unittest.TestCase):
     def test_section_boundaries_and_explicit_demographics_are_excluded(self):
         job = "회사 소개\n우리는 훌륭한 인재를 채용합니다.\n자격 요건\nPython 개발 경험\n20대 여성 우대\n국적: 대한민국\n기독교 신자\n복리후생\n매년 해외 여행과 조식 제공\n지원 방법\n이메일 제출\n우대 사항: Redis 운영 경험"
         result = engine.analyze("Python 개발 및 Redis 운영을 담당했습니다.", "회사", "개발자", job)
-        self.assertEqual([item["requirement"] for item in result["matches"]], ["Python 개발 경험", "Redis 운영 경험"])
+        self.assertEqual(
+            [item["requirement"] for item in result["matches"]],
+            ["Python 개발 경험", "Redis 운영 경험"],
+        )
         english = "About us\nWe are hiring.\nRequirements\nPython development experience\nFemale aged 20 required\nReligion: Christian\nBenefits\nFree meals\nHow to apply\nEmail us"
         result = engine.analyze("I developed Python software.", "Example", "Developer", english)
         self.assertEqual(result["requirement_count"], 1)
@@ -112,7 +153,9 @@ class AnalysisTests(unittest.TestCase):
     def test_explicit_framework_alternatives_accept_either(self):
         job = "Python 및 FastAPI 또는 Flask를 사용한 서비스 개발 경험"
         for framework in ("FastAPI", "Flask"):
-            result = engine.analyze(f"Python과 {framework}로 서비스를 개발했습니다.", "회사", "개발자", job)
+            result = engine.analyze(
+                f"Python과 {framework}로 서비스를 개발했습니다.", "회사", "개발자", job
+            )
             self.assertEqual(result["matches"][0]["status"], "confirmed")
             self.assertEqual(result["matches"][0]["missing_terms"], [])
         result = engine.analyze("Python으로 서비스를 개발했습니다.", "회사", "개발자", job)
@@ -123,30 +166,53 @@ class AnalysisTests(unittest.TestCase):
         result = engine.analyze("SQL로 보고서를 작성했습니다.", "회사", "개발자", job)
         self.assertEqual(result["matches"][0]["status"], "partial")
         self.assertEqual(set(result["matches"][0]["missing_terms"]), {"PostgreSQL", "Redis"})
-        result = engine.analyze("SQL과 PostgreSQL을 활용하고 Redis 캐시를 개발했습니다.", "회사", "개발자", job)
+        result = engine.analyze(
+            "SQL과 PostgreSQL을 활용하고 Redis 캐시를 개발했습니다.", "회사", "개발자", job
+        )
         self.assertEqual(result["matches"][0]["status"], "confirmed")
 
     def test_unsectioned_requirements_and_outage_skill_still_work(self):
-        result = engine.analyze("Python 서비스 장애 대응과 Redis 운영을 담당했습니다.", "회사", "개발자", "회사소개: Python 서비스를 만드는 곳\nPython 서비스 장애 대응\nRedis 운영\n성별: 남성")
+        result = engine.analyze(
+            "Python 서비스 장애 대응과 Redis 운영을 담당했습니다.",
+            "회사",
+            "개발자",
+            "회사소개: Python 서비스를 만드는 곳\nPython 서비스 장애 대응\nRedis 운영\n성별: 남성",
+        )
         self.assertEqual(result["requirement_count"], 2)
         self.assertEqual(result["confirmed_count"], 2)
 
     def test_negative_cloud_experience_in_answers_does_not_increase_score(self):
         job = "AWS 환경에서 서비스 운영 경험"
-        negatives = ["AWS 환경에서 운영한 경험은 없습니다.", "AWS 서비스를 직접 운영해 본 적은 없습니다", "AWS 관련 실무 경험이 전혀 없습니다", "AWS 사용 경험 없음"]
+        negatives = [
+            "AWS 환경에서 운영한 경험은 없습니다.",
+            "AWS 서비스를 직접 운영해 본 적은 없습니다",
+            "AWS 관련 실무 경험이 전혀 없습니다",
+            "AWS 사용 경험 없음",
+        ]
         before = engine.analyze("Python 서비스를 개발했습니다.", "회사", "개발자", job)
         for answer in negatives:
             with self.subTest(answer=answer):
-                result = engine.analyze("Python 서비스를 개발했습니다.", "회사", "개발자", job, {"evidence_1": answer})
+                result = engine.analyze(
+                    "Python 서비스를 개발했습니다.", "회사", "개발자", job, {"evidence_1": answer}
+                )
                 self.assertEqual(result["matches"][0]["status"], "missing")
                 self.assertEqual(result["score"], before["score"])
 
     def test_absence_of_outage_or_problem_is_positive_experience(self):
-        for text in ("AWS 서비스를 장애 없이 운영했습니다.", "AWS 운영 경험이 있습니다. 문제 없음.", "AWS 서비스를 운영했고 Python 환경에서 개발한 경험은 없습니다."):
+        for text in (
+            "AWS 서비스를 장애 없이 운영했습니다.",
+            "AWS 운영 경험이 있습니다. 문제 없음.",
+            "AWS 서비스를 운영했고 Python 환경에서 개발한 경험은 없습니다.",
+        ):
             with self.subTest(text=text):
                 result = engine.analyze(text, "회사", "개발자", "AWS 서비스 운영 경험")
                 self.assertEqual(result["matches"][0]["status"], "confirmed")
-        result = engine.analyze("AWS 환경에서 운영한 경험은 없지만 SQL로 보고서를 작성했습니다.", "회사", "개발자", "AWS 서비스 운영\nSQL 활용")
+        result = engine.analyze(
+            "AWS 환경에서 운영한 경험은 없지만 SQL로 보고서를 작성했습니다.",
+            "회사",
+            "개발자",
+            "AWS 서비스 운영\nSQL 활용",
+        )
         self.assertEqual([item["status"] for item in result["matches"]], ["missing", "confirmed"])
 
     def test_contextual_evidence_precedes_longer_keyword_list(self):
@@ -155,14 +221,29 @@ class AnalysisTests(unittest.TestCase):
         result = engine.analyze(resume, "회사", "개발자", job)
         self.assertEqual(result["matches"][0]["status"], "confirmed")
         self.assertEqual(len(result["matches"][0]["evidence_items"]), 2)
-        self.assertTrue(all("개발했습니다" in item["excerpt"] for item in result["matches"][0]["evidence_items"]))
+        self.assertTrue(
+            all(
+                "개발했습니다" in item["excerpt"] for item in result["matches"][0]["evidence_items"]
+            )
+        )
         keywords = engine.analyze("Python, FastAPI, Flask", "회사", "개발자", job)
         self.assertEqual(keywords["matches"][0]["status"], "partial")
         self.assertTrue(result["gaps"])
 
     def test_answer_source_labels_hide_internal_keys(self):
-        for key, label in (("evidence_1", "보완 답변 1"), ("ownership", "본인 기여 답변"), ("outcome", "결과·규모 답변"), ("internal_key", "보완 답변")):
-            result = engine.analyze("Python으로 서비스를 개발했습니다.", "회사", "개발자", "AWS 서비스 운영", {key: "AWS 서비스를 운영했습니다."})
+        for key, label in (
+            ("evidence_1", "보완 답변 1"),
+            ("ownership", "본인 기여 답변"),
+            ("outcome", "결과·규모 답변"),
+            ("internal_key", "보완 답변"),
+        ):
+            result = engine.analyze(
+                "Python으로 서비스를 개발했습니다.",
+                "회사",
+                "개발자",
+                "AWS 서비스 운영",
+                {key: "AWS 서비스를 운영했습니다."},
+            )
             self.assertEqual(result["matches"][0]["evidence_items"][0]["source_label"], label)
 
 
