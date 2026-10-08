@@ -35,3 +35,14 @@
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Never share local database state, session secrets or reset mail
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.key
+*.pem
+*.eml

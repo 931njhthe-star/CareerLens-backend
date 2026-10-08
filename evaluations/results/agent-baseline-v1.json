@@ -1,0 +1,88 @@
+{
+  "evaluation_version": "1.0.0",
+  "workflow_version": "1.0.0",
+  "prompt_version": "1.0.0/1.0.0",
+  "kind": "offline_synthetic_fault_injection",
+  "case_count": 5,
+  "baseline_definition": "One structured-coaching attempt with no correction or fallback; candidates are checked only by the evaluation harness.",
+  "scope": "Synthetic responses, not actual LLM output. Does not measure hiring quality, autonomous tool selection, retrieval relevance or production reliability.",
+  "metrics": {
+    "baseline_valid_coaching_rate": 0.2,
+    "after_valid_coaching_rate": 0.4,
+    "baseline_invalid_outputs_passed_through": 3,
+    "after_invalid_outputs_passed_through": 0,
+    "after_workflow_completion_rate": 1.0,
+    "after_score_consistency_rate": 1.0,
+    "after_retry_count": 4,
+    "after_average_retries": 0.8,
+    "tool_selection_accuracy": null,
+    "retry_reduction": null
+  },
+  "cases": [
+    {
+      "scenario": "valid",
+      "injected_error": null,
+      "baseline_valid_coaching": true,
+      "baseline_invalid_output_passed_through": false,
+      "after_valid_coaching": true,
+      "after_invalid_output_passed_through": false,
+      "after_errors": [],
+      "after_fallback": false,
+      "after_retries": 0,
+      "after_score_unchanged": true,
+      "after_workflow_completed": true
+    },
+    {
+      "scenario": "quote_repaired",
+      "injected_error": "ungrounded_evidence",
+      "baseline_valid_coaching": false,
+      "baseline_invalid_output_passed_through": true,
+      "after_valid_coaching": true,
+      "after_invalid_output_passed_through": false,
+      "after_errors": ["ungrounded_evidence"],
+      "after_fallback": false,
+      "after_retries": 1,
+      "after_score_unchanged": true,
+      "after_workflow_completed": true
+    },
+    {
+      "scenario": "invalid_schema",
+      "injected_error": "invalid_schema",
+      "baseline_valid_coaching": false,
+      "baseline_invalid_output_passed_through": true,
+      "after_valid_coaching": false,
+      "after_invalid_output_passed_through": false,
+      "after_errors": ["invalid_schema", "invalid_schema"],
+      "after_fallback": true,
+      "after_retries": 1,
+      "after_score_unchanged": true,
+      "after_workflow_completed": true
+    },
+    {
+      "scenario": "unknown_reference",
+      "injected_error": "unknown_reference",
+      "baseline_valid_coaching": false,
+      "baseline_invalid_output_passed_through": true,
+      "after_valid_coaching": false,
+      "after_invalid_output_passed_through": false,
+      "after_errors": ["unknown_reference", "unknown_reference"],
+      "after_fallback": true,
+      "after_retries": 1,
+      "after_score_unchanged": true,
+      "after_workflow_completed": true
+    },
+    {
+      "scenario": "provider_timeout",
+      "injected_error": "provider_error",
+      "baseline_valid_coaching": false,
+      "baseline_invalid_output_passed_through": false,
+      "after_valid_coaching": false,
+      "after_invalid_output_passed_through": false,
+      "after_errors": ["provider_error", "provider_error"],
+      "after_fallback": true,
+      "after_retries": 1,
+      "after_score_unchanged": true,
+      "after_workflow_completed": true
+    }
+  ]
+}
