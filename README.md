@@ -2,7 +2,7 @@
 
 이 폴더는 main 브랜치의 독립 백엔드 Git 저장소입니다.
 API, 업무 규칙, LangGraph 분석 엔진, 테스트 데이터, 설계 문서와 배포 설정을 이 저장소 안에서 관리합니다.
-현재 서비스 기능은 구현 전이며, 구조 문서와 API 명세 내보내기·fixture 검증 보조 도구가 준비되어 있습니다.
+FastAPI와 LangGraph 기반 매칭 평가 백엔드를 구현했습니다. 실행·API·채점 정책은 [백엔드 실행 안내](docs/backend-implementation.md)를 참고하세요.
 
 ## 전체 구조
 
@@ -88,14 +88,14 @@ API 라우트와 worker는 application 유스케이스를 호출합니다. appli
 
 `resumes/parsing`은 필드 구조화·근거 위치·재파싱을, `integrations/document_parsers`는 파일 형식별 텍스트 추출 연결을 담당합니다.
 `analysis/validation`은 결정적 검증 규칙을, `agent/nodes`는 검증 호출과 재실행 경로를 담당합니다.
-`analysis/scoring`은 향후 채택할 점수·신뢰도 규칙의 예약 공간입니다. 종합점수 공개와 판정 상태 대응 정책은 아직 확정하지 않았습니다.
+`analysis/scoring`은 12개 초기 채점 기준과 가중 기하평균을 구현합니다. 미확인 항목 및 미해결 검증 문제는 종합점수 보류로 표시합니다.
 
 ## API 계약과 저장소 독립성
 
 백엔드 API 스키마를 원본으로 관리합니다. `scripts/export-api-contract.ps1`은 생성된 OpenAPI JSON을 버전·해시와 함께 `contracts/openapi/v<version>`에 내보내고 동일 버전 덮어쓰기를 막습니다.
 프론트엔드는 공개된 버전별 명세를 받아 자신의 API 클라이언트·타입을 관리합니다.
 실행·빌드·테스트에 다른 저장소의 로컬 폴더가 필요하지 않도록 구성합니다.
-의존성 설정, 환경변수 예제, CI와 배포 파일은 이 저장소의 루트 또는 `infra` 아래에 추가합니다.
+의존성은 `requirements.txt`와 `requirements.lock.txt`, 환경변수는 루트 `.env`에서 관리합니다. CI와 배포 구성은 후속 작업입니다.
 
 ## 테스트 데이터
 
@@ -108,12 +108,14 @@ API 라우트와 worker는 application 유스케이스를 호출합니다. appli
 버전 관리할 이력서는 합성·비식별 자료를 사용합니다. 실제 업로드와 개인 자료는 `data/uploads`, `data/private`, `.runtime` 등의 Git 제외 위치에서 관리합니다.
 기술 분류·판정 정책처럼 서비스가 참조하는 지식 자료는 `data/knowledge`에 둡니다.
 
-Python/LangGraph/Pydantic 중심 설계를 수용하되, HTTP 프레임워크·DB·LLM 제공자·작업 큐는 후속 구현에서 선택합니다.
+Python/FastAPI/Pydantic, Supabase PostgreSQL, OpenAI GPT-6 Luna, LangGraph와 별도 DB 기반 worker를 사용합니다.
 상세 흐름도 대응은 [구조 설계 문서](docs/architecture/folder-structure.md), fixture 사용 기준은 [테스트 데이터 안내](tests/fixtures/README.md)를 참고합니다.
 
 ## 개발 시작 기준
 
 먼저 이력서 입력·확인·승인, 공고 선택, 분석 실행, 근거 확인 흐름을 구현합니다.
-관리자·준비 일정·기업 정보·외부 일정·worker·종합점수는 확장 예약 영역이며 모두 먼저 구현하지 않습니다.
+현재 구현은 Markdown 업로드, 인증, 공고 선택, Yahoo Finance 기업 맥락, 4개 영역 매칭 평가, worker, 진행률, 종합점수 및 Markdown 보고서입니다. 관리자·준비 일정·외부 일정은 확장 예약 영역입니다.
 의존 방향과 초기/확장 범위는 [의존 규칙](docs/architecture/dependencies.md), 명세 내보내기는 [API 계약 절차](docs/api/contract-workflow.md)에 정의되어 있습니다.
-원격 저장소·태그·릴리스와 업무 API 구현은 아직 없습니다.
+업무 API와 개발용 OpenAPI 계약을 구현했습니다. 원격 저장소·태그·릴리스는 아직 없습니다.
+
+
